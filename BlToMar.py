@@ -26,6 +26,7 @@ bl_info = {
 import bpy
 import os
 import subprocess
+import tempfile
 
 from bpy.props import (StringProperty,
                        CollectionProperty,
@@ -67,6 +68,85 @@ def active_object_changed(scene, depsgraph):
         print("base_name")
     else:
         scene.object_custom_name = ""
+#创建导出临时文件
+def make_loader():
+    path = "" + tempfile.gettempdir()
+    path = '/'.join(path.split('\\'))
+    loader = path + "/loader.py"
+    return loader
+
+#临时文件内容
+def py_build_up(exportPath):
+    loader = make_loader()
+    exportPath = '/'.join(exportPath.split('\\'))
+    with open(loader, "w+") as loader:
+        loader.write("import mset\n")
+        loader.write("import os\n")
+        loader.write("fbx_file = " + "'" + str(exportPath) + "'\n")
+        loader.write("baker = mset.BakerObject()\n")
+        loader.write("baker.importModel(fbx_file)\n")
+#         loader.write("""\
+# baker.importModel(fbx_file)
+# if os.path.exists(fbx_file):
+#     # 删除指定路径的文件
+#     os.remove(fbx_file)
+#     print(f"文件已删除: {fbx_file}")
+# else:
+#     print("文件不存在，请检查文件路径。")""")
+
+
+def outputFBX():
+
+    basedir = os.path.dirname(bpy.data.filepath)
+
+    if not basedir:
+       raise Exception("！！！Blend file is not saved！！！\n！！！Blend文件未保存！！！")
+
+    #获取文件名
+    objectName = os.path.basename(bpy.data.filepath).split('.')[0]
+
+    # 设置导出路径
+    exportPath = os.path.join(basedir, objectName + "_temp" + ".fbx")
+    # 导出FBX文件
+    bpy.ops.export_scene.fbx(filepath=(exportPath),
+                             check_existing=True,
+                             filter_glob="*.fbx",
+                             use_selection=True,
+                             use_active_collection=True,
+                             global_scale=1,
+                             apply_unit_scale=True,
+                             apply_scale_options='FBX_SCALE_NONE',
+                             bake_space_transform=True,
+                             object_types={'MESH'},
+                             use_mesh_modifiers=True,
+                             use_mesh_modifiers_render=True,
+                             mesh_smooth_type='OFF',
+                             use_mesh_edges=False,
+                             use_tspace=False,
+                             use_custom_props=False,
+                             add_leaf_bones=False,
+                             primary_bone_axis='Y',
+                             secondary_bone_axis='X',
+                             use_armature_deform_only=False,
+                             armature_nodetype='NULL',
+                             bake_anim=False,
+                             bake_anim_use_all_bones=False,
+                             bake_anim_use_nla_strips=False,
+                             bake_anim_use_all_actions=False,
+                             bake_anim_force_startend_keying=False,
+                             bake_anim_step=1,
+                             bake_anim_simplify_factor=1,
+                             path_mode='AUTO',
+                             embed_textures=False,
+                             batch_mode='OFF',
+                             use_batch_own_dir=True,
+                             use_metadata=True,
+                             axis_forward='-Y',
+                             axis_up='Z',
+                             )
+    return exportPath
+
+
 
 # == OPERATORS
 #自定义List属性
@@ -308,7 +388,10 @@ class ExportToMarmoset(bpy.types.Operator):
         # 检查exe文件路径是否有效
         if os.path.isfile(exe_path):
             # 如果有效，则使用subprocess.Popen()启动exe文件
-            subprocess.Popen(exe_path)
+            fbxExportPath = outputFBX()
+            py_build_up(fbxExportPath)
+            loader = make_loader()
+            subprocess.Popen([exe_path, loader])
         else:
             # 如果无效，则向用户报告错误信息
             self.report({'ERROR'}, f"Invalid exe path: {exe_path}")

@@ -235,7 +235,7 @@ class CheckActiveObjectName(bpy.types.Operator):
 
 
 #重命名添加后缀
-class RenameObjects(bpy.types.Operator):
+class RenameObjectSuffix(bpy.types.Operator):
     bl_idname = "rename.suffix"
     bl_label = "Rename Objects"
 
@@ -258,6 +258,30 @@ class ClearSuffix(bpy.types.Operator):
                 obj.name = obj.name.replace("_high", "")
         return {'FINISHED'}
 
+
+class RenameObjectPrefix(bpy.types.Operator):
+    bl_idname = "rename.prefix"
+    bl_label = "Rename Objects"
+
+    def execute(self, context):
+        selected_objects = bpy.context.selected_objects
+        prefix = bpy.context.scene.rename_prefix
+
+        for i, obj in enumerate(selected_objects, start=1):
+            base_name = obj.name
+            if "_low" in base_name:
+                base_name = base_name.replace("_low", "")
+                suffix = "_low"
+            elif "_high" in base_name:
+                base_name = base_name.replace("_high", "")
+                suffix = "_high"
+            else:
+                suffix = ""
+
+            new_name = f"{prefix}_{i:03d}{suffix}"
+            obj.name = new_name
+
+        return {'FINISHED'}
 #集合组
 class list_actions(bpy.types.Operator):
     bl_idname = "list.actions"
@@ -455,6 +479,10 @@ class RenamePanel(bpy.types.Panel):
 
         layout.operator("object.clear_suffix", text="清除后缀",icon="GPBRUSH_ERASE_HARD")
 
+        row = layout.row(align=True)
+        row.prop(context.scene, "rename_prefix")
+        row.operator("rename.prefix", text="批量命名",icon="GPBRUSH_FILL")
+
 # 第三个面板 - 分组
 class GroupPanel(bpy.types.Panel):
     bl_label = "分组"
@@ -510,7 +538,8 @@ CLASSES = (
     GroupPanel,
     ExportPanel,
     ShowObjects,
-    RenameObjects,
+    RenameObjectSuffix,
+    RenameObjectPrefix,
     ClearSuffix,
     StartModalOperator,
     CheckActiveObjectName,

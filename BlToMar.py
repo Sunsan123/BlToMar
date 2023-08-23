@@ -367,7 +367,7 @@ class RemoveCollectionWithObjects(bpy.types.Operator):
                 base_name = base_name.replace("_high", "")
 
             for obj_iter in scene.objects:
-                if obj_iter == base_name + "_low" or base_name + "_high":
+                if (obj_iter.name == base_name + "_low") or (obj_iter.name == base_name + "_high"):
                     # 获取相同besename物体所在的集合列表
                     obj_collections = obj_iter.users_collection
                     # 遍历物体所在的集合列表
@@ -425,8 +425,18 @@ class ExportToMarmoset(bpy.types.Operator):
 class RunExeOperatorPreferences(AddonPreferences):
     bl_idname = __name__
 
+    # 获取Blender的语言设置
+    language = bpy.context.preferences.view.language
+
+    # 根据语言设置按钮文本
+    if language == "zh_CN":
+        name_text = "八猴路径"
+    else:
+        name_text = "Marmoset Path"
+
+
     exe_path: StringProperty(
-        name="八猴路径",
+        name= name_text,
         subtype='FILE_PATH',
     )
 
@@ -438,7 +448,7 @@ class RunExeOperatorPreferences(AddonPreferences):
 # 面板
 # 第一个面板 - 显示
 class DisplayPanel(bpy.types.Panel):
-    bl_label = "显示"
+    bl_label = "Show"
     bl_idname = "OBJECT_PT_display_panel"
     bl_category = "Bl2Mar"
     bl_space_type = "VIEW_3D"
@@ -448,16 +458,29 @@ class DisplayPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
+        # 获取Blender的语言设置
+        language = bpy.context.preferences.view.language
+
+        # 根据语言设置按钮文本
+        if language == "zh_CN":
+            low_text = "显示 low"
+            high_text = "显示 high"
+            all_text = "显示全部物体"
+        else:
+            low_text = "Show low"
+            high_text = "Show high"
+            all_text = "Show all objects"
+
         # 添加按钮
         row = layout.row(align=True)
-        row.operator("object.show_objects", text="显示 low" ,icon="ZOOM_OUT").suffix = "low"
-        row.operator("object.show_objects", text="显示 high",icon="ZOOM_OUT").suffix = "high"
-        layout.operator("object.show_objects", text="显示全部物体",icon="ZOOM_IN").suffix = ""
+        row.operator("object.show_objects", text=low_text, icon="ZOOM_OUT").suffix = "low"
+        row.operator("object.show_objects", text=high_text, icon="ZOOM_OUT").suffix = "high"
+        layout.operator("object.show_objects", text=all_text, icon="ZOOM_IN").suffix = ""
 
 # # 第二个面板 - 重命名
 class RenamePanel(bpy.types.Panel):
     bl_idname = "OBJECT_PT_rename_panel"
-    bl_label = "重命名"
+    bl_label = "Rename"
     bl_category = "Bl2Mar"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -466,26 +489,45 @@ class RenamePanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
+        # 获取Blender的语言设置
+        language = bpy.context.preferences.view.language
+
+        # 根据语言设置按钮和文本框的标签
+        if language == "zh_CN":
+            custom_name_text = "自定义名称"
+            dynamic_detect_text = "动态检测"
+            add_low_suffix_text = "添加 low 后缀"
+            add_high_suffix_text = "添加 high 后缀"
+            clear_suffix_text = "清除后缀"
+            batch_rename_text = "批量命名"
+        else:
+            custom_name_text = "Custom Name"
+            dynamic_detect_text = "Dynamic Detect"
+            add_low_suffix_text = "Add low suffix"
+            add_high_suffix_text = "Add high suffix"
+            clear_suffix_text = "Clear suffix"
+            batch_rename_text = "Batch Rename"
+
         # 添加文本框
-        layout.prop(context.scene, "object_custom_name", text="自定义名称")
-        #动态检测
+        layout.prop(context.scene, "object_custom_name", text=custom_name_text)
+        # 动态检测
         row = layout.row(align=True)
-        row.operator("object.start_modal_operator", text="动态检测",icon="GHOST_ENABLED")
+        row.operator("object.start_modal_operator", text=dynamic_detect_text, icon="GHOST_ENABLED")
 
         # 添加按钮
         row = layout.row(align=True)
-        row.operator("rename.suffix", text="添加 low 后缀",icon="GPBRUSH_CHISEL").suffix = "low"
-        row.operator("rename.suffix", text="添加 high 后缀",icon="GPBRUSH_CHISEL").suffix = "high"
+        row.operator("rename.suffix", text=add_low_suffix_text, icon="GPBRUSH_CHISEL").suffix = "low"
+        row.operator("rename.suffix", text=add_high_suffix_text, icon="GPBRUSH_CHISEL").suffix = "high"
 
-        layout.operator("object.clear_suffix", text="清除后缀",icon="GPBRUSH_ERASE_HARD")
+        layout.operator("object.clear_suffix", text=clear_suffix_text, icon="GPBRUSH_ERASE_HARD")
 
         row = layout.row(align=True)
-        row.prop(context.scene, "rename_prefix")
-        row.operator("rename.prefix", text="批量命名",icon="GPBRUSH_FILL")
+        row.prop(context.scene, "rename_prefix",text="")
+        row.operator("rename.prefix", text=batch_rename_text, icon="GPBRUSH_FILL")
 
 # 第三个面板 - 分组
 class GroupPanel(bpy.types.Panel):
-    bl_label = "分组"
+    bl_label = "Bakery group"
     bl_idname = "OBJECT_PT_group_panel"
     bl_category = "Bl2Mar"
     bl_space_type = "VIEW_3D"
@@ -496,6 +538,17 @@ class GroupPanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
+        # 获取Blender的语言设置
+        language = bpy.context.preferences.view.language
+
+        # 根据语言设置按钮和文本框的标签
+        if language == "zh_CN":
+            add_text = "添加"
+            remove_text = "移除"
+        else:
+            add_text = "Add"
+            remove_text = "Remove"
+
         # 创建一个新的行
         row = layout.row()
         # 在行中添加一个自定义集合UI列表，用于显示场景中的子集合
@@ -503,8 +556,8 @@ class GroupPanel(bpy.types.Panel):
 
         # 创建一个新的列，用于放置添加和删除按钮
         col = row.column(align=True)
-        col.operator("list.actions", icon='ADD', text="").action = 'ADD'
-        col.operator("list.actions", icon='REMOVE', text="").action = 'REMOVE'
+        col.operator("list.actions", icon='ADD',text="").action = 'ADD'
+        col.operator("list.actions", icon='REMOVE',text="").action = 'REMOVE'
 
         # 获取当前选中的子集合
         collection = scene.collection.children[scene.collection_index]
@@ -512,13 +565,13 @@ class GroupPanel(bpy.types.Panel):
         layout.prop(collection, "name")
 
         row = layout.row()
-        row.operator("object.add_collection", text="添加", icon='COLLECTION_NEW')
-        row.operator("object.remove_collection", text="移除", icon='TRASH')
+        row.operator("object.add_collection", text=add_text, icon='COLLECTION_NEW')
+        row.operator("object.remove_collection", text=remove_text, icon='TRASH')
 
 
 # 第四个面板 - 导出
 class ExportPanel(bpy.types.Panel):
-    bl_label = "导出"
+    bl_label = "Export"
     bl_idname = "OBJECT_PT_export_panel"
     bl_category = "Bl2Mar"
     bl_space_type = "VIEW_3D"
@@ -528,8 +581,17 @@ class ExportPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
+        # 获取Blender的语言设置
+        language = bpy.context.preferences.view.language
+
+        # 根据语言设置按钮的标签
+        if language == "zh_CN":
+            export_text = "导出到 Marmoset Toolbag 4"
+        else:
+            export_text = "Export to Marmoset Toolbag 4"
+
         # 添加按钮
-        layout.operator("object.export_to_marmoset", text="导出到 Marmoset Toolbag 4",icon="MESH_MONKEY")
+        layout.operator("object.export_to_marmoset", text=export_text, icon="MESH_MONKEY")
 
 #注册类
 CLASSES = (
@@ -566,6 +628,7 @@ def register():
 
     #在 Blender 场景数据中创建一个自定义字符串属性 StringProperty 是 Blender 的内置属性，用于创建和管理字符串类型的自定义属性
     bpy.types.Scene.object_custom_name = StringProperty(name="Custom Name")
+    bpy.types.Scene.rename_prefix = bpy.props.StringProperty(name="Prefix", default="NewName")
     # bpy.ops.object.check_active_object_name()
     bpy.types.Scene.collection_index = bpy.props.IntProperty()
 
@@ -579,6 +642,7 @@ def unregister():
         bpy.utils.unregister_class(klass)  # 反注册每个类
 
     del bpy.types.Scene.object_custom_name
+    del bpy.types.Scene.rename_prefix
     del bpy.types.Scene.collection_index
 
 

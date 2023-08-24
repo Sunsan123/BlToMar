@@ -39,10 +39,12 @@ Select group, select any low/high object, and click the Add button to automatica
 
 Select group, select any low/high object, and click the Remove button to automatically remove the same named object to the group  
 
+![10](./Images/10.gif)
+
 * **Export**
 
 Specify the path to Marmoset Toolbag4 in the plugins panel, then save the Blend file and click Export to export automatically  
 
-![10](./Images/10.gif)
+![11](./Images/11.gif)
 
     

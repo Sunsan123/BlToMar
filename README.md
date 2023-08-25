@@ -1,4 +1,4 @@
-![0](./Images/0.jpg)  
+![0](./Images/BlToMar.png)  
 
 # BlToMar
 **BlToMar - Blender To MarmosetToolbag4 Plugin** is a plugin that exports Blender to MarmosetToolbag4 and provides some convenient operations in blender  
